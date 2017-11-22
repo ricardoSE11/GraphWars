@@ -10,5 +10,3 @@ node {
 	text-background-mode: plain;
 	text-alignment: at-right;
 }
-
-

@@ -1,3 +1,4 @@
+import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
 import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
 import org.graphstream.graph.*;
@@ -10,7 +11,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class MainView {
     private boolean juegoIniciado=false;
@@ -24,8 +25,8 @@ public class MainView {
     private JPanel basePanel;
     private JButton agregarNodoButton;
     private JTextField txtNombreNodo;
-    private JTextField txtAristaDestino;
-    private JTextField txtAristaOrigen;
+    private JTextField txtDestino;
+    private JTextField txtOrigen;
     private JButton agregarAristaButton;
     private JSpinner spnPesoNormal;
     private JSpinner spnPesoFastWay;
@@ -45,6 +46,11 @@ public class MainView {
     private JPanel frameInfo;
     private JLabel lblPesoNormal;
     private JLabel lblPesoFastWay;
+    private JComboBox cmbMensajeTipo;
+    private JTextField txtMensajeOrigen;
+    private JButton btnEnviarMensaje;
+    private JPanel frameInteraccion;
+    private JLabel lblTipo;
 
     public MainView() {
 
@@ -113,18 +119,81 @@ public class MainView {
                 terminarTurno();
             }
         });
+        btnEnviarMensaje.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                enviarMensaje();
+            }
+        });
+    }
+
+    private void enviarMensaje() {
+        if(origenValido()){
+            Node dest;
+            try{
+                Node orig = graph.getNode(txtOrigen.getText());
+                dest= graph.getNode(txtDestino.getText());
+                String tipo=String.valueOf(cmbMensajeTipo.getSelectedItem());
+                switch (tipo){
+                    case "Hit":
+                        int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
+                        float costo = randomNum*(pesosPonderados()[0]/100*40);
+                        if(gastarDinero((int)costo)){
+                            DFSAlgorithm algorithm = new DFSAlgorithm();
+                            algorithm.init(graph);
+                            algorithm.compute(graph.getNode(0),null);
+                        }
+                        break;
+                }
+
+
+            }catch (ElementNotFoundException e){
+                JOptionPane.showMessageDialog(frame,
+                        "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        }
+
+    }
+
+    private boolean origenValido(){
+        try{
+            Node node = graph.getNode(txtOrigen.getText());
+
+            return node==currentNode||((ArrayList) currentNode.getAttribute("hijos")).contains(node);
+
+        }catch (ElementNotFoundException e){
+            JOptionPane.showMessageDialog(frame,
+                    "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        return false;
     }
 
     private void terminarTurno() {
         do{
             turno=turno+1<graph.getNodeCount()?turno+1:0;
             currentNode = graph.getNode(turno);
-        }while ((int)currentNode.getAttribute("vida")!=0);
+        }while ((int)currentNode.getAttribute("vida")==0);
         lblTurno.setText(currentNode.getId());
         lblDinero.setText(currentNode.getAttribute("dinero").toString());
     }
 
-    private boolean sePuedeGastar(int n){return n>=(int)currentNode.getAttribute("dinero");}
+    private boolean gastarDinero(int n){
+        boolean res = n>=(int)currentNode.getAttribute("dinero");
+        if(!res){
+            JOptionPane.showMessageDialog(frame,
+                    "No tiene dinero suficiente",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return res;
+        }
+        currentNode.addAttribute("dinero",(int)currentNode.getAttribute("dinero")-n);
+        return res;
+
+    }
 
     private void iniciarJuego() {
         if(grafoEsConexo()){
@@ -146,6 +215,7 @@ public class MainView {
 
             frameInfo.setVisible(true);
             terminarTurnoButton.setVisible(true);
+            btnEnviarMensaje.setVisible(true);
 
             frameConfiguraciones.revalidate();
             //frameConfiguraciones.repaint();
@@ -197,9 +267,9 @@ public class MainView {
     }
 
     private void agregarArista() {
-        String s =txtAristaOrigen.getText();
-        String d = txtAristaDestino.getText();
-        if(s.isEmpty()||d.isEmpty()){
+        String s = txtOrigen.getText();
+        String d = txtDestino.getText();
+        if(s.isEmpty()||(d.isEmpty()&&!juegoIniciado)){
             JOptionPane.showMessageDialog(frame,
                     "Debe ingresar los puntos de la arista",
                     "Error",
@@ -213,22 +283,21 @@ public class MainView {
             if(!juegoIniciado){
                 edge.addAttribute("pesoNormal", (int) spnPesoNormal.getValue());
                 edge.addAttribute("pesoFastWay", (int) spnPesoFastWay.getValue());
-                edge.addAttribute("ui.label", String.valueOf((int) spnPesoNormal.getValue())+" - FW"+String.valueOf((int) spnPesoFastWay.getValue()));
+                edge.addAttribute("ui.label", String.valueOf((int) spnPesoNormal.getValue())+" - FW "+String.valueOf((int) spnPesoFastWay.getValue()));
 
 
-            }else{
+            }else if(gastarDinero(precioArista)){
+                //Todo: solo dejar que se puedan comprar nodos si el currentNode es el source
                 int[] pesos=pesosPonderados();
                 edge.addAttribute("pesoNormal", (int) pesos[0]);
                 edge.addAttribute("pesoFastWay", (int) pesos[1]);
-                edge.addAttribute("ui.label", String.valueOf(pesos[0])+" - FW"+String.valueOf(pesos[1]));
+                edge.addAttribute("ui.label", String.valueOf(pesos[0])+" - FW "+String.valueOf(pesos[1]));
 
-
-                currentNode.addAttribute("dinero",(int)currentNode.getAttribute("dinero")-precioArista);
                 lblDinero.setText(currentNode.getAttribute("dinero").toString());
                 actualizarEtiquetaDeNodo(currentNode);
             }
-            txtAristaOrigen.setText("");
-            txtAristaDestino.setText("");
+            txtOrigen.setText("");
+            txtDestino.setText("");
         }catch (ElementNotFoundException e){
             JOptionPane.showMessageDialog(frame,
                     "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
