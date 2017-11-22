@@ -141,7 +141,7 @@ public class MainView {
                         if(gastarDinero((int)costo)){
                             DFSAlgorithm algorithm = new DFSAlgorithm();
                             algorithm.init(graph);
-                            algorithm.compute(graph.getNode(0),null);
+                            algorithm.compute(orig,dest);
                         }
                         break;
                 }
