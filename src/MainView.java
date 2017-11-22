@@ -1,0 +1,295 @@
+import Classes.StatusEscudo;
+import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
+import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.spriteManager.SpriteManager;
+import org.graphstream.ui.swingViewer.ViewPanel;
+import org.graphstream.ui.view.Viewer;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainView {
+    private boolean juegoIniciado=false;
+    private int precioArista;
+    private int turno=-1;
+    private Node currentNode;
+    private JFrame frame;
+    private Graph graph;
+    private SpriteManager sman;
+
+    private JPanel basePanel;
+    private JButton agregarNodoButton;
+    private JTextField txtNombreNodo;
+    private JTextField txtAristaDestino;
+    private JTextField txtAristaOrigen;
+    private JButton agregarAristaButton;
+    private JSpinner spnPesoNormal;
+    private JSpinner spnPesoFastWay;
+    private JButton iniciarJuegoButton;
+    private JSpinner spnTiempoInactividadArista;
+    private JSpinner spnDanioArista;
+    private JSpinner spnTiempoMeditacion;
+    private JSpinner spnDineroInicial;
+    private JSpinner spnCostoDeArista;
+    private JSpinner spnCostoDesbloqueo;
+    private JLabel lblDineroInicial;
+    private JPanel frameConfiguraciones;
+    private JPanel frameAgregarNodo;
+    private JButton terminarTurnoButton;
+    private JLabel lblTurno;
+    private JLabel lblDinero;
+    private JPanel frameInfo;
+    private JLabel lblPesoNormal;
+    private JLabel lblPesoFastWay;
+
+    public MainView() {
+
+        frame= new JFrame("MainView");
+        frame.setContentPane(basePanel);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
+        graph = new SingleGraph("Juego");
+        sman = new SpriteManager(graph);
+        /*
+         * TODO: Esta direccion hay que subirlo a un gist en github y sacarla desde ahi
+         */
+        graph.addAttribute("ui.stylesheet", "url('file:///c:/users/eadan/documents/graphwars/ss')");
+
+        //*******************************************************
+        //QUITAR COMENTARIO PARA HACER QUE SE VEA CON MAS CALIDAD
+        //*******************************************************
+        //graph.addAttribute("ui.quality");
+        graph.addAttribute("ui.antialias");//Este se puede desactivar, pero se ve feo.
+
+        /* Nodos de prueba
+        graph.addNode("A");
+        graph.addNode("B");
+        graph.addNode("C");
+        graph.addEdge("AB", "A", "B", true);
+        graph.addEdge("BC", "B", "C", true);
+        graph.addEdge("CA", "C", "A", true);
+
+        for (Node node : graph) {
+
+            //node.addAttribute("vida", 100);
+        }*/
+
+        Viewer viewer = new Viewer(graph, Viewer.ThreadingModel.GRAPH_IN_GUI_THREAD);
+        viewer.enableAutoLayout();
+
+        ViewPanel view = viewer.addDefaultView(false);
+        frame.add(view);
+        frame.pack();
+        frame.setVisible(true);
+
+
+
+        agregarNodoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                agregarNodo();
+            }
+        });
+        agregarAristaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                agregarArista();
+            }
+        });
+        iniciarJuegoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                iniciarJuego();
+            }
+        });
+        terminarTurnoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                terminarTurno();
+            }
+        });
+    }
+
+    private void terminarTurno() {
+        do{
+            turno=turno+1<graph.getNodeCount()?turno+1:0;
+            currentNode = graph.getNode(turno);
+        }while ((int)currentNode.getAttribute("vida")!=0);
+        lblTurno.setText(currentNode.getId());
+        lblDinero.setText(currentNode.getAttribute("dinero").toString());
+    }
+
+    private boolean sePuedeGastar(int n){return n>=(int)currentNode.getAttribute("dinero");}
+
+    private void iniciarJuego() {
+        if(grafoEsConexo()){
+            juegoIniciado=true;
+            inicializarNodos();
+
+            lblDineroInicial.setVisible(false);
+            spnDineroInicial.setVisible(false);
+            spnCostoDeArista.setVisible(false);
+            precioArista=(int)spnCostoDeArista.getValue();
+            lblPesoFastWay.setVisible(false);
+            lblPesoNormal.setVisible(false);
+            spnPesoFastWay.setVisible(false);
+            spnPesoNormal.setVisible(false);
+            frameAgregarNodo.setVisible(false);
+            iniciarJuegoButton.setVisible(false);
+
+
+
+            frameInfo.setVisible(true);
+            terminarTurnoButton.setVisible(true);
+
+            frameConfiguraciones.revalidate();
+            //frameConfiguraciones.repaint();
+
+            terminarTurno();
+        }else{
+            JOptionPane.showMessageDialog(frame,
+                    "El grafo no es conexo",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+    }
+
+    private void actualizarEtiquetaDeNodo(Node n){
+        n.addAttribute("ui.label", n.getId()+"\n"+
+                "Vida:"+n.getAttribute("vida").toString()+
+                "Escudos:"+n.getAttribute("escudos").toString()+
+                "Dinero:"+n.getAttribute("dinero").toString()+
+                "Hijos:"+((ArrayList) n.getAttribute("hijos")).size());
+    }
+
+    private void inicializarNodos() {
+        for (Node n : graph.getEachNode()){
+            n.addAttribute("escudos", new StatusEscudo(n));
+            n.addAttribute("dinero",(int) spnDineroInicial.getValue());
+            n.addAttribute("vida",100);
+            n.addAttribute("hijos",new ArrayList<Node>());
+            actualizarEtiquetaDeNodo(n);
+
+            /*
+                vecinos esta dentro de nodo (neighbourmap)
+             */
+        }
+    }
+
+    private boolean grafoEsConexo() {
+        TarjanStronglyConnectedComponents tscc = new TarjanStronglyConnectedComponents();
+        tscc.init(graph);
+        tscc.compute();
+
+        int max=-1;
+        for (Node n : graph.getEachNode()){
+            int group=Integer.parseInt((n.getAttribute(tscc.getSCCIndexAttribute()).toString()));
+            max=(group)>max?group:max;
+        }
+
+        return max==0;
+    }
+
+    private void agregarArista() {
+        String s =txtAristaOrigen.getText();
+        String d = txtAristaDestino.getText();
+        if(s.isEmpty()||d.isEmpty()){
+            JOptionPane.showMessageDialog(frame,
+                    "Debe ingresar los puntos de la arista",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try {
+            Edge edge= graph.addEdge(s+d,s,d,true);
+            edge.addAttribute("vida",100);
+            edge.addAttribute("estaBloqueada",false);
+            if(!juegoIniciado){
+                edge.addAttribute("pesoNormal", (int) spnPesoNormal.getValue());
+                edge.addAttribute("pesoFastWay", (int) spnPesoFastWay.getValue());
+                edge.addAttribute("ui.label", String.valueOf((int) spnPesoNormal.getValue())+" - FW"+String.valueOf((int) spnPesoFastWay.getValue()));
+
+
+            }else{
+                int[] pesos=pesosPonderados();
+                edge.addAttribute("pesoNormal", (int) pesos[0]);
+                edge.addAttribute("pesoFastWay", (int) pesos[1]);
+                edge.addAttribute("ui.label", String.valueOf(pesos[0])+" - FW"+String.valueOf(pesos[1]));
+
+
+                currentNode.addAttribute("dinero",(int)currentNode.getAttribute("dinero")-precioArista);
+                lblDinero.setText(currentNode.getAttribute("dinero").toString());
+                actualizarEtiquetaDeNodo(currentNode);
+            }
+            txtAristaOrigen.setText("");
+            txtAristaDestino.setText("");
+        }catch (ElementNotFoundException e){
+            JOptionPane.showMessageDialog(frame,
+                    "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        catch (IdAlreadyInUseException e){
+            JOptionPane.showMessageDialog(frame,
+                    "La arista ya existe",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private int[] pesosPonderados() {
+        int  p1=0, p2=0;
+        for(Edge e : graph.getEdgeSet()){
+            if(e.hasAttribute("pesoNormal")){
+                p1+=(int)e.getAttribute("pesoNormal");
+                p2+=(int)e.getAttribute("pesoFastWay");
+            }
+        }
+        p1/=graph.getEdgeCount();
+        p2/=graph.getEdgeCount();
+        return new int[]{p1, p2};
+
+    }
+
+    private void agregarNodo() {
+        String nombre =txtNombreNodo.getText();
+
+        if(nombre.isEmpty()){
+            JOptionPane.showMessageDialog(frame,
+                    "Debe ingresar un nombre para el nodo",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        try{
+            Node node = graph.addNode(nombre);
+            node.addAttribute("ui.label", node.getId());
+
+
+
+            txtNombreNodo.setText("");
+        }
+        catch (IdAlreadyInUseException e){
+            JOptionPane.showMessageDialog(frame,
+                    "El nombre del nodo ya esta en uso",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
+
+
+
+    public static void main(String[] args) {
+        System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
+        MainView mainView = new MainView();
+
+    }
+}
