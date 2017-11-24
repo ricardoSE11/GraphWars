@@ -1,6 +1,7 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
 import org.graphstream.algorithm.Dijkstra;
+import org.graphstream.algorithm.Kruskal;
 import org.graphstream.algorithm.Prim;
 import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
 import org.graphstream.graph.*;
@@ -172,7 +173,8 @@ public class MainView {
                         prim.compute();
                         randomNum = ThreadLocalRandom.current().nextInt(2, 4+ 1);
                         costo =  randomNum*(((float)prim.getTreeWeight())/100f*60f);
-                        if(gastarDinero((int)costo)){
+                        if(gastarDinero((int)costo))
+                        {
                             DFSAlgorithm dfsPrim=new DFSAlgorithm();
                             dfsPrim.init(graph);
                             dfsPrim.attrib="prim";
@@ -188,10 +190,36 @@ public class MainView {
 
                         }
                         break;
+
+                    case "Kruscal":
+                        Kruskal kruskal = new Kruskal("pesoNormal","krusk","in", "notin");
+                        kruskal.init(graph);
+                        kruskal.compute();
+                        randomNum = ThreadLocalRandom.current().nextInt(2, 4+ 1);
+                        costo =  randomNum*(((float)kruskal.getTreeWeight())/100f*60f);
+                        if(gastarDinero((int)costo))
+                        {
+                            DFSAlgorithm dfsKruskal=new DFSAlgorithm();
+                            dfsKruskal.init(graph);
+                            dfsKruskal.attrib="krusk";
+                            dfsKruskal.compute(orig,dest);
+                            costo -= dfsKruskal.obtenerCosto();
+                            if(dfsKruskal.lista.size()>0){
+                                ArrayList<Edge> aristasDFS = dfsKruskal.obtenerEdges();
+                                desgastarAristas(aristasDFS);
+                                recibirDmg(dest,(int)costo);
+                                System.out.println("Se envio un Kruskal de: " + orig.getId() + " a " + dest.getId() );
+                            }else
+                                System.out.println("Kruskal escogio caminos que no se pueden usar :<");
+
+                        }
+                        break;
+
                     case "Multishot":
                         costo = (pesosPonderados()[0]*10);
                         multihit(orig,dest,costo,false);
                         break;
+
                     case "Kamikaze":
                         costo = (pesosPonderados()[0]*20);
                         multihit(orig,dest,costo,true);
