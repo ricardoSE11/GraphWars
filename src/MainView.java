@@ -1,5 +1,6 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
+import Classes.ThreadArista;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.algorithm.Kruskal;
 import org.graphstream.algorithm.Prim;
@@ -573,7 +574,16 @@ public class MainView {
             currLife -= substractValue;
             currEdge.changeAttribute("vida" , currLife);
             actualizarEtiquetaDeArista(currEdge);
+            if (currLife <= 0)
+                desactivarArista(currEdge);
         }
+    }
+
+    private void desactivarArista(Edge arista)
+    {
+        int tiempo = (int)spnTiempoInactividadArista.getValue();
+        ThreadArista desactivar = new ThreadArista(tiempo , arista);
+        desactivar.run();
     }
 
     //Origen es quien envio el mensaje originalmente
