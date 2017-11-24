@@ -1,5 +1,6 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
+import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
 import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
@@ -11,6 +12,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class MainView {
@@ -61,16 +64,17 @@ public class MainView {
 
         graph = new SingleGraph("Juego");
         sman = new SpriteManager(graph);
+        
         /*
          * TODO: Esta direccion hay que subirlo a un gist en github y sacarla desde ahi
          */
-        graph.addAttribute("ui.stylesheet", "url('file:///c:/users/eadan/documents/graphwars/ss')");
+        //graph.addAttribute("ui.stylesheet", "url('--- INSERTE URL ---')");
 
         //*******************************************************
         //QUITAR COMENTARIO PARA HACER QUE SE VEA CON MAS CALIDAD
         //*******************************************************
         //graph.addAttribute("ui.quality");
-        graph.addAttribute("ui.antialias");//Este se puede desactivar, pero se ve feo.
+        //graph.addAttribute("ui.antialias");//Este se puede desactivar, pero se ve feo.
 
         /* Nodos de prueba
         graph.addNode("A");
@@ -132,8 +136,8 @@ public class MainView {
             Node dest;
             try{
                 Node orig = graph.getNode(txtOrigen.getText());
-                dest= graph.getNode(txtDestino.getText());
-                String tipo=String.valueOf(cmbMensajeTipo.getSelectedItem());
+                dest = graph.getNode(txtDestino.getText());
+                String tipo = String.valueOf(cmbMensajeTipo.getSelectedItem());
                 switch (tipo){
                     case "Hit":
                         int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
@@ -178,15 +182,16 @@ public class MainView {
 
     private void terminarTurno() {
         do{
-            turno=turno+1<graph.getNodeCount()?turno+1:0;
+            turno = turno + 1 < graph.getNodeCount()? turno + 1 : 0 ;
             currentNode = graph.getNode(turno);
-        }while ((int)currentNode.getAttribute("vida")==0);
+        }while ((int)currentNode.getAttribute("vida") == 0);
+
         lblTurno.setText(currentNode.getId());
         lblDinero.setText(currentNode.getAttribute("dinero").toString());
     }
 
     private boolean gastarDinero(int n){
-        boolean res = n>=(int)currentNode.getAttribute("dinero");
+        boolean res = n >= (int)currentNode.getAttribute("dinero");
         if(!res){
             JOptionPane.showMessageDialog(frame,
                     "No tiene dinero suficiente",
@@ -270,6 +275,28 @@ public class MainView {
         return max==0;
     }
 
+    //D: Funcion que dado un grafo y dos Nodos, retorna la lista con el nombre de los Nodos que llevan al camino mas corto
+    private List<String> dijkstra(Graph graph , String origen ,  String destino)
+    {
+        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "length");
+
+        // Compute the shortest paths in g from A(origen) to all nodes
+        dijkstra.init(graph);
+        dijkstra.setSource(graph.getNode(origen));
+        dijkstra.compute();
+
+        // Print the shortest path from A(origen) to B(destino)
+        System.out.println(dijkstra.getPath(graph.getNode(destino)));
+
+        String lista = dijkstra.getPath(graph.getNode(destino)).toString().replace("[","");
+        lista = lista.replace("]" , "");
+        System.out.println(lista);
+        List<String> listaNodos = new ArrayList<>(Arrays.asList(lista.split(",")));
+        //System.out.println(listaNodos);
+
+        return listaNodos;
+    }
+
     private void agregarArista() {
         String s = txtOrigen.getText();
         String d = txtDestino.getText();
@@ -281,13 +308,14 @@ public class MainView {
             return;
         }
         try {
-            Edge edge= graph.addEdge(s+d,s,d,true);
+            Edge edge= graph.addEdge(s+d,s,d,true); //Este true hace que las aristas sean dirigidas
             edge.addAttribute("vida",100);
             edge.addAttribute("estaBloqueada",false);
             if(!juegoIniciado){
                 edge.addAttribute("pesoNormal", (int) spnPesoNormal.getValue());
                 edge.addAttribute("pesoFastWay", (int) spnPesoFastWay.getValue());
-                edge.addAttribute("ui.label", String.valueOf((int) spnPesoNormal.getValue())+" - FW "+String.valueOf((int) spnPesoFastWay.getValue()));
+                edge.addAttribute("ui.label", "PN: " + String.valueOf((int) spnPesoNormal.getValue())+" - FW: "+
+                        String.valueOf((int) spnPesoFastWay.getValue()) + " - "  + "Vida: " + edge.getAttribute("vida"));
 
 
             }else if(gastarDinero(precioArista)){
@@ -295,7 +323,7 @@ public class MainView {
                 int[] pesos=pesosPonderados();
                 edge.addAttribute("pesoNormal", (int) pesos[0]);
                 edge.addAttribute("pesoFastWay", (int) pesos[1]);
-                edge.addAttribute("ui.label", String.valueOf(pesos[0])+" - FW "+String.valueOf(pesos[1]));
+                edge.addAttribute("ui.label", "PN: " + String.valueOf(pesos[0])+" - FW: "+String.valueOf(pesos[1]) + " - " + "Vida: " + edge.getAttribute("vida"));
 
                 lblDinero.setText(currentNode.getAttribute("dinero").toString());
                 actualizarEtiquetaDeNodo(currentNode);
@@ -355,6 +383,20 @@ public class MainView {
                     JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void desgastarAristas(ArrayList<Edge> aristas)
+    {
+        int substractValue = (int)spnDanioArista.getValue();
+        for (Edge currEdge: aristas)
+        {
+            int currLife = currEdge.getAttribute("vida");
+            currLife -= substractValue;
+            currEdge.changeAttribute("vida" , currLife);
+        }
+    }
+
+
+
 
 
 

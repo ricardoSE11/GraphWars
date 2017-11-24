@@ -21,7 +21,6 @@ public class DFSAlgorithm{
         for (Node n:graph.getNodeSet())
             n.addAttribute("DFSVisited",false);
 
-
     }
 
     public void compute(Node s, Node d) {
