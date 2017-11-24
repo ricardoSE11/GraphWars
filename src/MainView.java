@@ -1,5 +1,7 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
+import Classes.ThreadArista;
+import com.sun.xml.internal.bind.v2.TODO;
 import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.algorithm.Kruskal;
 import org.graphstream.algorithm.Prim;
@@ -66,7 +68,7 @@ public class MainView {
 
         String soundName = "yes.wav";
         AudioInputStream audioInputStream = null;
-        Clip clip=null;
+        Clip clip = null;
         try {
             audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
             clip = AudioSystem.getClip();
@@ -557,6 +559,8 @@ public class MainView {
             currLife -= substractValue;
             currEdge.changeAttribute("vida" , currLife);
             actualizarEtiquetaDeArista(currEdge);
+            if (currLife <= 0)
+                deshabilitarArista(currEdge);
         }
     }
 
@@ -569,6 +573,14 @@ public class MainView {
         float costo = dfs.obtenerCosto();
         hit(destino , origen , costo , false , true);
     }
+
+    private void deshabilitarArista(Edge arista)
+    {
+        int tiempo = (int)spnTiempoInactividadArista.getValue();
+        ThreadArista deshabilitar = new ThreadArista(tiempo , arista);
+        deshabilitar.run();
+    }
+    
 
     //Origen es quien envio el mensaje originalmente
     private void efectoBomba(Node origen , Node afectado)
@@ -595,4 +607,5 @@ public class MainView {
         MainView mainView = new MainView();
 
     }
+
 }
