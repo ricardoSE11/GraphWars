@@ -12,8 +12,10 @@ import java.util.List;
 
 public class DFSAlgorithm{
     Graph graph;
-    public ArrayList<Node> lista;
+    public ArrayList<Node> lista=new ArrayList<>();
+    public ArrayList<ArrayList<Node>> listas=new ArrayList<>();
     public String attrib=null;
+    public boolean usarBloqueadas=false;
 
     int weight;
 
@@ -46,13 +48,14 @@ public class DFSAlgorithm{
         // current path[]
         if (u==d){
             lista=new ArrayList<>(path);
+            listas.add(new ArrayList<>(path));
         }
         else {
             // If current vertex is not destination
             //Recur for all the vertices adjacent to this vertex
             for (Edge i : u.getLeavingEdgeSet()){
                 if (!visited.contains(i.getTargetNode())
-                        &&!((boolean)i.getAttribute("estaBloqueada"))){
+                        &&((!((boolean)i.getAttribute("estaBloqueada"))&&!usarBloqueadas)||usarBloqueadas)){
                     if(attrib!=null){
                         if(((String)i.getAttribute(attrib)).equals("in"))
                             aux(i.getTargetNode(), d, visited, path);
@@ -75,7 +78,7 @@ public class DFSAlgorithm{
      */
     public int obtenerCosto(){
         int res = -1;
-        if(lista!=null){
+        if(lista.size()>0){
             res=0;
             for(int i =0; i<lista.size()-1; i++)
                 res+=(int)lista.get(i).getEdgeToward(lista.get(i+1)).getAttribute("pesoNormal");
@@ -85,11 +88,10 @@ public class DFSAlgorithm{
 
     public ArrayList<Edge> obtenerEdges(){
         ArrayList<Edge> res=null;
-        if(lista!=null){
-            res = new ArrayList<>();
-            for(int i =0; i<lista.size()-1; i++)
-                res.add(lista.get(i).getEdgeToward(lista.get(i+1)));
-        }
+        res = new ArrayList<>();
+        for(int i =0; i<lista.size()-1; i++)
+            res.add(lista.get(i).getEdgeToward(lista.get(i+1)));
+
         return res;
     }
 }

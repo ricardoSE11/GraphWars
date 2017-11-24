@@ -146,24 +146,7 @@ public class MainView {
                 switch (tipo){
                     case "Hit":
 
-                        System.out.println("Enviando un hit");
-                        randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
-                        costo = randomNum*(pesosPonderados()[0]/100f*40f);
-                        if(gastarDinero((int)costo)){
-                            DFSAlgorithm algorithm = new DFSAlgorithm();
-                            algorithm.init(graph);
-                            algorithm.compute(orig,dest);
-                            costo -= algorithm.obtenerCosto();
-                            if(algorithm.lista.size()>0){
-                                ArrayList<Edge> aristasDFS = algorithm.obtenerEdges();
-                                desgastarAristas(aristasDFS);
-                                recibirDmg(dest,(int)costo);
-                                System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
-                            }
-                            //todo: hacer un mensaje mas especifico
-                            //todo: thread para volver a levantar la arista
-                            //todo: otros mensajes
-                        }
+                        hit(orig, dest,costo, true,false);
                         break;
 
                     case "Teletransportacion":
@@ -200,9 +183,13 @@ public class MainView {
                                 desgastarAristas(aristasDFS);
                                 recibirDmg(dest,(int)costo);
                                 System.out.println("Se envio un prim de: " + orig.getId() + " a " + dest.getId() );
-                            }
+                            }else
+                                System.out.println("Prim escogio caminos que no se pueden usar :<");
+
                         }
                         break;
+
+
 
                 }
                 actualizarEtiquetaDeNodo(orig);
@@ -216,6 +203,28 @@ public class MainView {
                         JOptionPane.ERROR_MESSAGE);
             }
         }
+
+    }
+
+    private void hit(Node orig, Node dest, float costo, boolean cobrar, boolean sumar) {
+        System.out.println("Enviando un hit");
+        int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
+        costo = costo==0? randomNum*(pesosPonderados()[0]/100f*40f) : costo;
+        if(cobrar)
+            if(!gastarDinero((int)costo))
+                return;
+
+        DFSAlgorithm algorithm = new DFSAlgorithm();
+        algorithm.init(graph);
+        algorithm.compute(orig,dest);
+        costo = sumar? costo+algorithm.obtenerCosto(): costo-algorithm.obtenerCosto();
+        if(algorithm.lista.size()>0){
+            ArrayList<Edge> aristasDFS = algorithm.obtenerEdges();
+            desgastarAristas(aristasDFS);
+            recibirDmg(dest,(int)costo);
+            System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+        }
+
 
     }
 
