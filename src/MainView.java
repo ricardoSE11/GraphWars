@@ -25,7 +25,6 @@ public class MainView {
     private Node currentNode;
     private JFrame frame;
     private Graph graph;
-    private SpriteManager sman;
 
     private JPanel basePanel;
     private JButton agregarNodoButton;
@@ -65,8 +64,7 @@ public class MainView {
 
 
         graph = new SingleGraph("Juego");
-        sman = new SpriteManager(graph);
-        
+
         /*
          * TODO: Esta direccion hay que subirlo a un gist en github y sacarla desde ahi
          */
@@ -76,7 +74,7 @@ public class MainView {
         //QUITAR COMENTARIO PARA HACER QUE SE VEA CON MAS CALIDAD
         //*******************************************************
         //graph.addAttribute("ui.quality");
-        //graph.addAttribute("ui.antialias");//Este se puede desactivar, pero se ve feo.
+        graph.addAttribute("ui.antialias");//Este se puede desactivar, pero se ve feo.
 
         /* Nodos de prueba
         graph.addNode("A");
