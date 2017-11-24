@@ -140,14 +140,24 @@ public class MainView {
                 String tipo = String.valueOf(cmbMensajeTipo.getSelectedItem());
                 switch (tipo){
                     case "Hit":
+
+                        System.out.println("Enviando un hit");
                         int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
                         float costo = randomNum*(pesosPonderados()[0]/100*40);
                         if(gastarDinero((int)costo)){
                             DFSAlgorithm algorithm = new DFSAlgorithm();
                             algorithm.init(graph);
                             algorithm.compute(orig,dest);
-                            costo-=algorithm.obtenerCosto();
-                            //todo: funcion para gastar arista
+                            costo -= algorithm.obtenerCosto();
+                            //todo: encontrar el camino correcto
+                            Edge aristaADesgastar = orig.getEdgeToward(dest);
+                            ArrayList<Edge> aristasADesgastar = new ArrayList<>();
+                            aristasADesgastar.add(aristaADesgastar);
+                            desgastarAristas(aristasADesgastar);
+                            actualizarEtiquetaDeArista(aristaADesgastar);
+
+                            //todo: hacer un mensaje mas especifico
+                            System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
                             //todo: thread para volver a levantar la arista
                             //todo: otros mensajes
                         }
@@ -245,6 +255,12 @@ public class MainView {
                 "Escudos:"+n.getAttribute("escudos").toString()+
                 "Dinero:"+n.getAttribute("dinero").toString()+
                 "Hijos:"+((ArrayList) n.getAttribute("hijos")).size());
+    }
+
+    private void actualizarEtiquetaDeArista(Edge edge)
+    {
+        edge.addAttribute("ui.label","PN: " + String.valueOf((int) spnPesoNormal.getValue())+" - FW: "+
+                String.valueOf((int) spnPesoFastWay.getValue()) + " - "  + "Vida: " + edge.getAttribute("vida") );
     }
 
     private void inicializarNodos() {
