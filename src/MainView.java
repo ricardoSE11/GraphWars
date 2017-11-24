@@ -64,8 +64,13 @@ public class MainView {
     private JPanel frameEscudos;
     private JButton EspejoButton;
     private JButton BombEffectButon;
+    private JSpinner spnPorcentajeMeditacion;
+
+    public int PRECIODEESCUDO=50;
 
     public MainView() {
+
+
 
 
         frame= new JFrame("MainView");
@@ -140,6 +145,7 @@ public class MainView {
             }
         });
         SmokeWeedButton.addActionListener(new ActionListener() {
+
             @Override
             public void actionPerformed(ActionEvent e) {
                 String soundName = "yes.wav";
@@ -153,19 +159,28 @@ public class MainView {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-
+                StatusEscudo escudo=((StatusEscudo)currentNode.getAttribute("escudos"));
+                if(!escudo.meditando)
+                    if(gastarDinero(PRECIODEESCUDO))
+                        escudo.meditar((int)spnTiempoMeditacion.getValue(),(int)spnPorcentajeMeditacion.getValue());
             }
         });
         EspejoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                StatusEscudo escudo=((StatusEscudo)currentNode.getAttribute("escudos"));
+                if(!escudo.tieneEspejo)
+                    if(gastarDinero(PRECIODEESCUDO))
+                        escudo.tieneEspejo=true;
             }
         });
         BombEffectButon.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
+                StatusEscudo escudo=((StatusEscudo)currentNode.getAttribute("escudos"));
+                if(!escudo.tieneBombEffect)
+                    if(gastarDinero(PRECIODEESCUDO))
+                        escudo.tieneBombEffect=true;
             }
         });
     }
@@ -197,7 +212,7 @@ public class MainView {
                             costo*=10;
                             if(gastarDinero((int)costo)){
                                 desgastarAristas(aristasDijkstra);
-                                recibirDmg(dest,(int)costo);
+                                recibirDmg(orig, dest,(int)costo);
                                 System.out.println("Se envio un dijkstra de: " + orig.getId() + " a " + dest.getId() );
                             }
                         }
@@ -219,7 +234,7 @@ public class MainView {
                             if(dfsPrim.lista.size()>0){
                                 ArrayList<Edge> aristasDFS = dfsPrim.obtenerEdges();
                                 desgastarAristas(aristasDFS);
-                                recibirDmg(dest,(int)costo);
+                                recibirDmg(orig, dest,(int)costo);
                                 System.out.println("Se envio un prim de: " + orig.getId() + " a " + dest.getId() );
                             }else
                                 System.out.println("Prim escogio caminos que no se pueden usar :<");
@@ -243,7 +258,7 @@ public class MainView {
                             if(dfsKruskal.lista.size()>0){
                                 ArrayList<Edge> aristasDFS = dfsKruskal.obtenerEdges();
                                 desgastarAristas(aristasDFS);
-                                recibirDmg(dest,(int)costo);
+                                recibirDmg(orig, dest,(int)costo);
                                 System.out.println("Se envio un Kruskal de: " + orig.getId() + " a " + dest.getId() );
                             }else
                                 System.out.println("Kruskal escogio caminos que no se pueden usar :<");
@@ -291,7 +306,7 @@ public class MainView {
             if(array.size()>0){
                 ArrayList<Edge> aristasDFS = algorithm.obtenerEdges(array);
                 desgastarAristas(aristasDFS);
-                recibirDmg(dest,(int)costo);
+                recibirDmg(orig, dest,(int)costo);
                 System.out.println("Se envio un multihit de: " + orig.getId() + " a " + dest.getId() );
             }
         }
@@ -314,19 +329,29 @@ public class MainView {
         if(algorithm.lista.size()>0){
             ArrayList<Edge> aristasDFS = algorithm.obtenerEdges();
             desgastarAristas(aristasDFS);
-            recibirDmg(dest,(int)costo);
+            recibirDmg(orig, dest,(int)costo);
             System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
         }
 
 
     }
 
-    private void recibirDmg(Node node, int costo ){
-        int siguienteVida=(int)node.getAttribute("vida")-costo;
-        if (siguienteVida<0)
-            siguienteVida=0;
-        node.addAttribute("vida",siguienteVida);
-        actualizarEtiquetaDeNodo(node);
+    private void recibirDmg(Node origen, Node dest, int costo ){
+        StatusEscudo escudo=((StatusEscudo)dest.getAttribute("escudos"));
+        if(escudo.tieneBombEffect){
+            efectoBomba(origen, dest, costo);
+            escudo.tieneBombEffect=false;
+        }
+        if(escudo.tieneEspejo){
+            efectoEspejo(origen,dest,costo);
+        }
+        else {
+            int siguienteVida=(int)dest.getAttribute("vida")-costo;
+            if (siguienteVida<0)
+                siguienteVida=0;
+            dest.addAttribute("vida",siguienteVida);
+            actualizarEtiquetaDeNodo(dest);
+        }
     }
 
     private boolean origenValido(){
@@ -577,17 +602,13 @@ public class MainView {
     }
 
     //Origen es quien envio el mensaje originalmente
-    private void efectoEspejo(Node origen , Node destino)
+    private void efectoEspejo(Node origen , Node destino, float costo)
     {
-        DFSAlgorithm dfs = new DFSAlgorithm();
-        dfs.init(graph);
-        dfs.compute(destino,origen);
-        float costo = dfs.obtenerCosto();
         hit(destino , origen , costo , false , true);
     }
 
     //Origen es quien envio el mensaje originalmente
-    private void efectoBomba(Node origen , Node afectado)
+    private void efectoBomba(Node origen , Node afectado, float costo)
     {
         Iterator<Node> iterator = afectado.getNeighborNodeIterator();
         ArrayList<Node> vecinos = new ArrayList<>();
@@ -597,10 +618,6 @@ public class MainView {
         for (Node currNode: vecinos) {
             if (afectado.hasEdgeToward(currNode))
             {
-                DFSAlgorithm dfs = new DFSAlgorithm();
-                dfs.init(graph);
-                dfs.compute(afectado,currNode);
-                float costo = dfs.obtenerCosto();
                 hit(afectado , currNode , costo , false , false);
             }
         }
