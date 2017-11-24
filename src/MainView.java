@@ -61,19 +61,13 @@ public class MainView {
     private JPanel frameInteraccion;
     private JLabel lblTipo;
     private JButton SmokeWeedButton;
+    private JPanel frameEscudos;
+    private JButton EspejoButton;
+    private JButton BombEffectButon;
 
     public MainView() {
 
-        String soundName = "yes.wav";
-        AudioInputStream audioInputStream = null;
-        Clip clip=null;
-        try {
-            audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
-            clip = AudioSystem.getClip();
-            clip.open(audioInputStream);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+
         frame= new JFrame("MainView");
         frame.setContentPane(basePanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -145,12 +139,33 @@ public class MainView {
                 enviarMensaje();
             }
         });
-        Clip finalClip = clip;
         SmokeWeedButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(finalClip !=null)
-                finalClip.start();
+                String soundName = "yes.wav";
+                AudioInputStream audioInputStream = null;
+                Clip clip=null;
+                try {
+                    audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
+                    clip = AudioSystem.getClip();
+                    clip.open(audioInputStream);
+                    clip.start();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+            }
+        });
+        EspejoButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
+        BombEffectButon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
             }
         });
     }
@@ -254,7 +269,7 @@ public class MainView {
 
             }catch (ElementNotFoundException e){
                 JOptionPane.showMessageDialog(frame,
-                        "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                        "Revise los nombres de los nodos",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
@@ -322,7 +337,7 @@ public class MainView {
 
         }catch (ElementNotFoundException e){
             JOptionPane.showMessageDialog(frame,
-                    "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                    "Revise los nombres de los nodos",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
@@ -370,6 +385,7 @@ public class MainView {
             iniciarJuegoButton.setVisible(false);
             lblTipo.setVisible(true);
             cmbMensajeTipo.setVisible(true);
+            frameEscudos.setVisible(true);
 
 
             frameInfo.setVisible(true);
@@ -496,7 +512,7 @@ public class MainView {
             txtDestino.setText("");
         }catch (ElementNotFoundException e){
             JOptionPane.showMessageDialog(frame,
-                    "Revise los nombres de los nodos", //Todo: hacer mas bonito este mensaje
+                    "Revise los nombres de los nodos",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
         }
