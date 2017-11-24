@@ -1,6 +1,7 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
 import org.graphstream.algorithm.Dijkstra;
+import org.graphstream.algorithm.Kruskal;
 import org.graphstream.algorithm.Prim;
 import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
 import org.graphstream.graph.*;
@@ -193,7 +194,8 @@ public class MainView {
                         prim.compute();
                         randomNum = ThreadLocalRandom.current().nextInt(2, 4+ 1);
                         costo =  randomNum*(((float)prim.getTreeWeight())/100f*60f);
-                        if(gastarDinero((int)costo)){
+                        if(gastarDinero((int)costo))
+                        {
                             DFSAlgorithm dfsPrim=new DFSAlgorithm();
                             dfsPrim.init(graph);
                             dfsPrim.attrib="prim";
@@ -209,10 +211,36 @@ public class MainView {
 
                         }
                         break;
+
+                    case "Kruscal":
+                        Kruskal kruskal = new Kruskal("pesoNormal","krusk","in", "notin");
+                        kruskal.init(graph);
+                        kruskal.compute();
+                        randomNum = ThreadLocalRandom.current().nextInt(2, 4+ 1);
+                        costo =  randomNum*(((float)kruskal.getTreeWeight())/100f*60f);
+                        if(gastarDinero((int)costo))
+                        {
+                            DFSAlgorithm dfsKruskal = new DFSAlgorithm();
+                            dfsKruskal.init(graph);
+                            dfsKruskal.attrib="krusk";
+                            dfsKruskal.compute(orig,dest);
+                            costo -= dfsKruskal.obtenerCosto();
+                            if(dfsKruskal.lista.size()>0){
+                                ArrayList<Edge> aristasDFS = dfsKruskal.obtenerEdges();
+                                desgastarAristas(aristasDFS);
+                                recibirDmg(dest,(int)costo);
+                                System.out.println("Se envio un Kruskal de: " + orig.getId() + " a " + dest.getId() );
+                            }else
+                                System.out.println("Kruskal escogio caminos que no se pueden usar :<");
+
+                        }
+                        break;
+
                     case "Multishot":
                         costo = (pesosPonderados()[0]*10);
                         multihit(orig,dest,costo,false);
                         break;
+
                     case "Kamikaze":
                         costo = (pesosPonderados()[0]*20);
                         multihit(orig,dest,costo,true);
@@ -249,7 +277,7 @@ public class MainView {
                 ArrayList<Edge> aristasDFS = algorithm.obtenerEdges(array);
                 desgastarAristas(aristasDFS);
                 recibirDmg(dest,(int)costo);
-                System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+                System.out.println("Se envio un multihit de: " + orig.getId() + " a " + dest.getId() );
             }
         }
 
@@ -532,13 +560,35 @@ public class MainView {
         }
     }
 
+    //Origen es quien envio el mensaje originalmente
+    private void efectoEspejo(Node origen , Node destino)
+    {
+        DFSAlgorithm dfs = new DFSAlgorithm();
+        dfs.init(graph);
+        dfs.compute(destino,origen);
+        float costo = dfs.obtenerCosto();
+        hit(destino , origen , costo , false , true);
+    }
 
-    int prueba = 0;
+    //Origen es quien envio el mensaje originalmente
+    private void efectoBomba(Node origen , Node afectado)
+    {
+        Iterator<Node> iterator = afectado.getNeighborNodeIterator();
+        ArrayList<Node> vecinos = new ArrayList<>();
+        while (iterator.hasNext())
+            vecinos.add(iterator.next());
 
-
-
-
-
+        for (Node currNode: vecinos) {
+            if (afectado.hasEdgeToward(currNode))
+            {
+                DFSAlgorithm dfs = new DFSAlgorithm();
+                dfs.init(graph);
+                dfs.compute(afectado,currNode);
+                float costo = dfs.obtenerCosto();
+                hit(afectado , currNode , costo , false , false);
+            }
+        }
+    }
 
     public static void main(String[] args) {
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
