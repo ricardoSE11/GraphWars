@@ -80,8 +80,8 @@ public class DijkstraTest {
             edge.addAttribute("ui.style", "fill-color: red;");
 
         // Print the shortest path from A to B
-        System.out.println(dijkstra.getPath(g.getNode("B")));
-        String lista = dijkstra.getPath(g.getNode("B")).toString().replace("[","");
+        System.out.println(dijkstra.getPath(g.getNode("E")));
+        String lista = dijkstra.getPath(g.getNode("E")).toString().replace("[","");
         lista = lista.replace("]" , "");
         System.out.println(lista);
         List<String> listaNodos = new ArrayList<>(Arrays.asList(lista.split(",")));

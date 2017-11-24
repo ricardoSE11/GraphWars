@@ -228,7 +228,7 @@ public class MainView {
                 ArrayList<Edge> aristasDFS = algorithm.obtenerEdges(array);
                 desgastarAristas(aristasDFS);
                 recibirDmg(dest,(int)costo);
-                System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+                System.out.println("Se envio un multihit de: " + orig.getId() + " a " + dest.getId() );
             }
         }
 
@@ -511,13 +511,35 @@ public class MainView {
         }
     }
 
+    //Origen es quien envio el mensaje originalmente
+    private void efectoEspejo(Node origen , Node destino)
+    {
+        DFSAlgorithm dfs = new DFSAlgorithm();
+        dfs.init(graph);
+        dfs.compute(destino,origen);
+        float costo = dfs.obtenerCosto();
+        hit(destino , origen , costo , false , true);
+    }
 
-    int prueba = 0;
+    //Origen es quien envio el mensaje originalmente
+    private void efectoBomba(Node origen , Node afectado)
+    {
+        Iterator<Node> iterator = afectado.getNeighborNodeIterator();
+        ArrayList<Node> vecinos = new ArrayList<>();
+        while (iterator.hasNext())
+            vecinos.add(iterator.next());
 
-
-
-
-
+        for (Node currNode: vecinos) {
+            if (afectado.hasEdgeToward(currNode))
+            {
+                DFSAlgorithm dfs = new DFSAlgorithm();
+                dfs.init(graph);
+                dfs.compute(afectado,currNode);
+                float costo = dfs.obtenerCosto();
+                hit(afectado , currNode , costo , false , false);
+            }
+        }
+    }
 
     public static void main(String[] args) {
         System.setProperty("org.graphstream.ui.renderer", "org.graphstream.ui.j2dviewer.J2DGraphRenderer");
