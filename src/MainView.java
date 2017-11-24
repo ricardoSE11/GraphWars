@@ -74,8 +74,6 @@ public class MainView {
     public MainView() {
 
 
-
-
         frame= new JFrame("MainView");
         frame.setContentPane(basePanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -148,7 +146,6 @@ public class MainView {
             }
         });
         SmokeWeedButton.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 String soundName = "yes.wav";
@@ -221,7 +218,6 @@ public class MainView {
                         break;
 
                     case "Teletransportacion":
-                        System.out.println("Enviando un Dijkstra");
                         ArrayList<Edge> aristasDijkstra = dijkstra(graph , orig , dest);
                         if (aristasDijkstra.size()>0){
                             for (Edge e:aristasDijkstra) {
@@ -232,7 +228,8 @@ public class MainView {
                             if(gastarDinero((int)costo)){
                                 desgastarAristas(aristasDijkstra);
                                 recibirDmg(orig, dest,(int)costo);
-                                System.out.println("Se envio un dijkstra de: " + orig.getId() + " a " + dest.getId() );
+                                System.out.println("Camino de Dijkstra: " + aristasDijkstra.toString());
+                                //System.out.println("Se envio un dijkstra de: " + orig.getId() + " a " + dest.getId() );
                             }
                         }
                         break;
@@ -253,8 +250,9 @@ public class MainView {
                             if(dfsPrim.lista.size()>0){
                                 ArrayList<Edge> aristasDFS = dfsPrim.obtenerEdges();
                                 desgastarAristas(aristasDFS);
-                                recibirDmg(orig, dest,(int)costo);
-                                System.out.println("Se envio un prim de: " + orig.getId() + " a " + dest.getId() );
+                                recibirDmg(orig, dest,(int)costo);                                
+                                System.out.println("Camino de Prim: " + dfsPrim.lista.toString());
+                                //System.out.println("Se envio un prim de: " + orig.getId() + " a " + dest.getId() );
                             }else
                                 System.out.println("Prim escogio caminos que no se pueden usar :<");
 
@@ -278,7 +276,8 @@ public class MainView {
                                 ArrayList<Edge> aristasDFS = dfsKruskal.obtenerEdges();
                                 desgastarAristas(aristasDFS);
                                 recibirDmg(orig, dest,(int)costo);
-                                System.out.println("Se envio un Kruskal de: " + orig.getId() + " a " + dest.getId() );
+                                System.out.println("Camino de Kruskal: " + dfsKruskal.lista.toString());
+                                //System.out.println("Se envio un Kruskal de: " + orig.getId() + " a " + dest.getId() );
                             }else
                                 System.out.println("Kruskal escogio caminos que no se pueden usar :<");
 
@@ -326,7 +325,8 @@ public class MainView {
                 ArrayList<Edge> aristasDFS = algorithm.obtenerEdges(array);
                 desgastarAristas(aristasDFS);
                 recibirDmg(orig, dest,(int)costo);
-                System.out.println("Se envio un multihit de: " + orig.getId() + " a " + dest.getId() );
+                System.out.println("Camino del Multihit: " + algorithm.lista.toString());
+                //System.out.println("Se envio un multihit de: " + orig.getId() + " a " + dest.getId() );
             }
         }
 
@@ -349,7 +349,8 @@ public class MainView {
             ArrayList<Edge> aristasDFS = algorithm.obtenerEdges();
             desgastarAristas(aristasDFS);
             recibirDmg(orig, dest,(int)costo);
-            System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+            System.out.println("Camino de Hit: " + algorithm.lista.toString());
+            //System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
         }
 
 
