@@ -199,7 +199,7 @@ public class MainView {
                         costo =  randomNum*(((float)kruskal.getTreeWeight())/100f*60f);
                         if(gastarDinero((int)costo))
                         {
-                            DFSAlgorithm dfsKruskal=new DFSAlgorithm();
+                            DFSAlgorithm dfsKruskal = new DFSAlgorithm();
                             dfsKruskal.init(graph);
                             dfsKruskal.attrib="krusk";
                             dfsKruskal.compute(orig,dest);
