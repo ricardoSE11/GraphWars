@@ -465,11 +465,11 @@ public class MainView {
     }
 
     private void actualizarEtiquetaDeNodo(Node n){
-        n.addAttribute("ui.label", n.getId()+"\n"+
-                "Vida:"+n.getAttribute("vida").toString()+
-                "Escudos:"+n.getAttribute("escudos").toString()+
-                "Dinero:"+n.getAttribute("dinero").toString()+
-                "Hijos:"+((ArrayList) n.getAttribute("hijos")).size());
+        n.addAttribute("ui.label",  "[ "+ n.getId()+"\n" + " ]" +
+                "          Vida: "+n.getAttribute("vida").toString() +
+                "                        Escudos: "+n.getAttribute("escudos").toString() + "  " +
+                "Dinero: "+n.getAttribute("dinero").toString()+ "  " +
+                "Hijos: "+((ArrayList) n.getAttribute("hijos")).size());
     }
 
     private void actualizarEtiquetaDeArista(Edge edge)
