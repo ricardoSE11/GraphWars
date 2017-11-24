@@ -583,6 +583,7 @@ public class MainView {
     {
         int tiempo = (int)spnTiempoInactividadArista.getValue();
         ThreadArista desactivar = new ThreadArista(tiempo , arista);
+        arista.addAttribute("estaBloqueada" , true);
         desactivar.run();
     }
 
