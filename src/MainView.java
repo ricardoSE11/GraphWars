@@ -13,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -138,12 +139,13 @@ public class MainView {
                 Node orig = graph.getNode(txtOrigen.getText());
                 dest = graph.getNode(txtDestino.getText());
                 String tipo = String.valueOf(cmbMensajeTipo.getSelectedItem());
+                float costo=0;
                 switch (tipo){
                     case "Hit":
 
                         System.out.println("Enviando un hit");
                         int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
-                        float costo = randomNum*(pesosPonderados()[0]/100*40);
+                        costo = randomNum*(pesosPonderados()[0]/100*40);
                         if(gastarDinero((int)costo)){
                             DFSAlgorithm algorithm = new DFSAlgorithm();
                             algorithm.init(graph);
@@ -165,7 +167,20 @@ public class MainView {
 
                     case "Teletransportacion":
                         System.out.println("Enviando un Dijkstra");
-                        System.out.println(dijkstra(graph , orig.getId() , dest.getId()));
+                        ArrayList<Edge> aristasDijkstra = dijkstra(graph , orig.getId() , dest);
+
+                        if (aristasDijkstra.size()>0){
+                            int nodos = 0;
+                            for (Edge e:aristasDijkstra) {
+                                costo+=(int) e.getAttribute("pesoFastWay");
+                            }
+                            costo/=nodos;
+                            costo*=10;
+
+                            desgastarAristas(aristasDijkstra);
+                            //todo:recibir DMG
+                        }
+
                         break;
 
                 }
@@ -298,8 +313,9 @@ public class MainView {
     }
 
     //D: Funcion que dado un grafo y dos Nodos, retorna la lista con el nombre de los Nodos que llevan al camino mas corto
-    private List<String> dijkstra(Graph graph , String origen ,  String destino)
+    private ArrayList<Edge> dijkstra(Graph graph , String origen ,  Node destino)
     {
+        //todo: origen es nodo
         Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "pesoFastWay");
 
         // Compute the shortest paths in g from A(origen) to all nodes
@@ -310,13 +326,21 @@ public class MainView {
         // Print the shortest path from A(origen) to B(destino)
         //System.out.println(dijkstra.getPath(graph.getNode(destino)));
 
-        String lista = dijkstra.getPath(graph.getNode(destino)).toString().replace("[","");
+        Iterator<Edge> iterator = dijkstra.getPathEdgesIterator(destino);
+        ArrayList<Edge> res=new ArrayList<>();
+        while (iterator.hasNext())
+            res.add(iterator.next());
+
+        return res;
+
+
+
+        /*String lista = dijkstra.getPath(destino).toString().replace("[","");
         lista = lista.replace("]" , "");
         System.out.println(lista);
         List<String> listaNodos = new ArrayList<>(Arrays.asList(lista.split(",")));
-        //System.out.println(listaNodos);
+        //System.out.println(listaNodos);*/
 
-        return listaNodos;
     }
 
     private void agregarArista() {
