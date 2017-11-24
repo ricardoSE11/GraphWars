@@ -12,7 +12,9 @@ import java.util.List;
 
 public class DFSAlgorithm{
     Graph graph;
-    ArrayList<Node> lista;
+    public ArrayList<Node> lista;
+    public String attrib=null;
+
     int weight;
 
     public void init(Graph graph) {
@@ -43,14 +45,23 @@ public class DFSAlgorithm{
         // If current vertex is same as destination, then print
         // current path[]
         if (u==d){
-            lista=(path);
+            lista=new ArrayList<>(path);
         }
         else {
             // If current vertex is not destination
             //Recur for all the vertices adjacent to this vertex
-            for (Edge i : u.getLeavingEdgeSet())//Todo:  Verificar que la arista esté activa
-                if (!visited.contains(i.getTargetNode())&&!((boolean)i.getAttribute("estaBloqueada")))
-                    aux(i.getTargetNode(), d, visited, path);
+            for (Edge i : u.getLeavingEdgeSet()){
+                if (!visited.contains(i.getTargetNode())
+                        &&!((boolean)i.getAttribute("estaBloqueada"))){
+                    if(attrib!=null){
+                        if(((String)i.getAttribute(attrib)).equals("in"))
+                            aux(i.getTargetNode(), d, visited, path);
+                    }
+                    else
+                        aux(i.getTargetNode(), d, visited, path);
+                }
+            }
+
         }
         // Remove current vertex from path[] and mark it as unvisited
         path.remove(u);
@@ -72,7 +83,7 @@ public class DFSAlgorithm{
         return res;
     }
 
-    public List<Edge> obtenerEdges(){
+    public ArrayList<Edge> obtenerEdges(){
         ArrayList<Edge> res=null;
         if(lista!=null){
             res = new ArrayList<>();

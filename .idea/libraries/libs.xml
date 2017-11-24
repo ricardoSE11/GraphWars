@@ -17,6 +17,7 @@
     <JAVADOC />
     <SOURCES>
       <root url="jar://$PROJECT_DIR$/libs/gs-algo-1.3-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/libs/gs-core-1.3-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

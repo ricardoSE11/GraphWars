@@ -1,13 +1,14 @@
 import Algorithms.DFSAlgorithm;
 import Classes.StatusEscudo;
 import org.graphstream.algorithm.Dijkstra;
+import org.graphstream.algorithm.Prim;
 import org.graphstream.algorithm.TarjanStronglyConnectedComponents;
 import org.graphstream.graph.*;
+import org.graphstream.graph.implementations.AdjacencyListGraph;
 import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
-//Todo:Arreglar etiqueta de egde para mostrar todos los datos
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -140,26 +141,26 @@ public class MainView {
                 dest = graph.getNode(txtDestino.getText());
                 String tipo = String.valueOf(cmbMensajeTipo.getSelectedItem());
                 float costo=0;
+                int randomNum;
+
                 switch (tipo){
                     case "Hit":
 
                         System.out.println("Enviando un hit");
-                        int randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
-                        costo = randomNum*(pesosPonderados()[0]/100*40);
+                        randomNum = ThreadLocalRandom.current().nextInt(3, 5+ 1);
+                        costo = randomNum*(pesosPonderados()[0]/100f*40f);
                         if(gastarDinero((int)costo)){
                             DFSAlgorithm algorithm = new DFSAlgorithm();
                             algorithm.init(graph);
                             algorithm.compute(orig,dest);
                             costo -= algorithm.obtenerCosto();
-                            //todo: encontrar el camino correcto (DFS)
-                            Edge aristaADesgastar = orig.getEdgeToward(dest);
-                            ArrayList<Edge> aristasADesgastar = new ArrayList<>();
-                            aristasADesgastar.add(aristaADesgastar);
-                            desgastarAristas(aristasADesgastar);
-                            actualizarEtiquetaDeArista(aristaADesgastar);
-
+                            if(algorithm.lista.size()>0){
+                                ArrayList<Edge> aristasDFS = algorithm.obtenerEdges();
+                                desgastarAristas(aristasDFS);
+                                recibirDmg(dest,(int)costo);
+                                System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+                            }
                             //todo: hacer un mensaje mas especifico
-                            System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
                             //todo: thread para volver a levantar la arista
                             //todo: otros mensajes
                         }
@@ -167,24 +168,46 @@ public class MainView {
 
                     case "Teletransportacion":
                         System.out.println("Enviando un Dijkstra");
-                        ArrayList<Edge> aristasDijkstra = dijkstra(graph , orig.getId() , dest);
-
+                        ArrayList<Edge> aristasDijkstra = dijkstra(graph , orig , dest);
                         if (aristasDijkstra.size()>0){
-                            int nodos = 0;
                             for (Edge e:aristasDijkstra) {
                                 costo+=(int) e.getAttribute("pesoFastWay");
                             }
-                            costo/=nodos;
+                            costo/=aristasDijkstra.size();
                             costo*=10;
-
-                            desgastarAristas(aristasDijkstra);
-                            //todo:recibir DMG
+                            if(gastarDinero((int)costo)){
+                                desgastarAristas(aristasDijkstra);
+                                recibirDmg(dest,(int)costo);
+                                System.out.println("Se envio un dijkstra de: " + orig.getId() + " a " + dest.getId() );
+                            }
                         }
+                        break;
 
+                    case "Prim":
+                        Prim prim=new Prim("pesoNormal","prim","in", "notin");
+                        prim.init(graph);
+                        prim.compute();
+                        randomNum = ThreadLocalRandom.current().nextInt(2, 4+ 1);
+                        costo =  randomNum*(((float)prim.getTreeWeight())/100f*60f);
+                        if(gastarDinero((int)costo)){
+                            DFSAlgorithm dfsPrim=new DFSAlgorithm();
+                            dfsPrim.init(graph);
+                            dfsPrim.attrib="prim";
+                            dfsPrim.compute(orig,dest);
+                            costo -= dfsPrim.obtenerCosto();
+                            if(dfsPrim.lista.size()>0){
+                                ArrayList<Edge> aristasDFS = dfsPrim.obtenerEdges();
+                                desgastarAristas(aristasDFS);
+                                recibirDmg(dest,(int)costo);
+                                System.out.println("Se envio un prim de: " + orig.getId() + " a " + dest.getId() );
+                            }
+                        }
                         break;
 
                 }
+                actualizarEtiquetaDeNodo(orig);
 
+                lblDinero.setText(currentNode.getAttribute("dinero").toString());
 
             }catch (ElementNotFoundException e){
                 JOptionPane.showMessageDialog(frame,
@@ -194,6 +217,14 @@ public class MainView {
             }
         }
 
+    }
+
+    private void recibirDmg(Node node, int costo ){
+        int siguienteVida=(int)node.getAttribute("vida")-costo;
+        if (siguienteVida<0)
+            siguienteVida=0;
+        node.addAttribute("vida",siguienteVida);
+        actualizarEtiquetaDeNodo(node);
     }
 
     private boolean origenValido(){
@@ -222,7 +253,7 @@ public class MainView {
     }
 
     private boolean gastarDinero(int n){
-        boolean res = n >= (int)currentNode.getAttribute("dinero");
+        boolean res = n <= (int)currentNode.getAttribute("dinero");
         if(!res){
             JOptionPane.showMessageDialog(frame,
                     "No tiene dinero suficiente",
@@ -250,7 +281,8 @@ public class MainView {
             spnPesoNormal.setVisible(false);
             frameAgregarNodo.setVisible(false);
             iniciarJuegoButton.setVisible(false);
-
+            lblTipo.setVisible(true);
+            cmbMensajeTipo.setVisible(true);
 
 
             frameInfo.setVisible(true);
@@ -313,14 +345,13 @@ public class MainView {
     }
 
     //D: Funcion que dado un grafo y dos Nodos, retorna la lista con el nombre de los Nodos que llevan al camino mas corto
-    private ArrayList<Edge> dijkstra(Graph graph , String origen ,  Node destino)
+    private ArrayList<Edge> dijkstra(Graph graph , Node origen ,  Node destino)
     {
-        //todo: origen es nodo
         Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "pesoFastWay");
 
         // Compute the shortest paths in g from A(origen) to all nodes
         dijkstra.init(graph);
-        dijkstra.setSource(graph.getNode(origen));
+        dijkstra.setSource(origen);
         dijkstra.compute();
 
         // Print the shortest path from A(origen) to B(destino)
@@ -366,7 +397,7 @@ public class MainView {
 
             }else if(gastarDinero(precioArista)){
                 //Todo: solo dejar que se puedan comprar nodos si el currentNode es el source
-                int[] pesos=pesosPonderados();
+                float[] pesos=pesosPonderados();
                 edge.addAttribute("pesoNormal", (int) pesos[0]);
                 edge.addAttribute("pesoFastWay", (int) pesos[1]);
                 edge.addAttribute("ui.label", "PN: " + String.valueOf(pesos[0])+" - FW: "+String.valueOf(pesos[1]) + " - " + "Vida: " + edge.getAttribute("vida"));
@@ -390,8 +421,8 @@ public class MainView {
         }
     }
 
-    private int[] pesosPonderados() {
-        int  p1=0, p2=0;
+    private float[] pesosPonderados() {
+        float p1=0, p2=0;
         for(Edge e : graph.getEdgeSet()){
             if(e.hasAttribute("pesoNormal")){
                 p1+=(int)e.getAttribute("pesoNormal");
@@ -400,7 +431,7 @@ public class MainView {
         }
         p1/=graph.getEdgeCount();
         p2/=graph.getEdgeCount();
-        return new int[]{p1, p2};
+        return new float[]{p1, p2};
 
     }
 
@@ -438,6 +469,7 @@ public class MainView {
             int currLife = currEdge.getAttribute("vida");
             currLife -= substractValue;
             currEdge.changeAttribute("vida" , currLife);
+            actualizarEtiquetaDeArista(currEdge);
         }
     }
 

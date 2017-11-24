@@ -146,6 +146,7 @@
                 </constraints>
                 <properties>
                   <text value="*Tipo:"/>
+                  <visible value="false"/>
                 </properties>
               </component>
               <component id="9038c" class="javax.swing.JComboBox" binding="cmbMensajeTipo">
@@ -161,6 +162,7 @@
                     <item value="Multishot"/>
                     <item value="Kamikaze"/>
                   </model>
+                  <visible value="false"/>
                 </properties>
               </component>
             </children>
