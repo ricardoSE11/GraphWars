@@ -188,7 +188,14 @@ public class MainView {
 
                         }
                         break;
-
+                    case "Multishot":
+                        costo = (pesosPonderados()[0]*10);
+                        multihit(orig,dest,costo,false);
+                        break;
+                    case "Kamikaze":
+                        costo = (pesosPonderados()[0]*20);
+                        multihit(orig,dest,costo,true);
+                        break;
 
 
                 }
@@ -203,6 +210,28 @@ public class MainView {
                         JOptionPane.ERROR_MESSAGE);
             }
         }
+
+    }
+
+    private void multihit(Node orig, Node dest, float costo, boolean usarBloq) {
+        System.out.println("Enviando un multihit");
+        if(!gastarDinero((int)costo))
+            return;
+
+        DFSAlgorithm algorithm = new DFSAlgorithm();
+        algorithm.init(graph);
+        algorithm.usarBloqueadas=usarBloq;
+        algorithm.compute(orig,dest);
+        for (ArrayList<Node> array:algorithm.listas) {
+            costo -=-algorithm.obtenerCosto(array);
+            if(array.size()>0){
+                ArrayList<Edge> aristasDFS = algorithm.obtenerEdges(array);
+                desgastarAristas(aristasDFS);
+                recibirDmg(dest,(int)costo);
+                System.out.println("Se envio un hit de: " + orig.getId() + " a " + dest.getId() );
+            }
+        }
+
 
     }
 

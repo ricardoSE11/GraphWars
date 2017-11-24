@@ -76,6 +76,7 @@ public class DFSAlgorithm{
      * Devuelve -1 si no hay camino
      * @return
      */
+
     public int obtenerCosto(){
         int res = -1;
         if(lista.size()>0){
@@ -85,12 +86,29 @@ public class DFSAlgorithm{
         }
         return res;
     }
-
+    public int obtenerCosto(ArrayList<Node> arrayList){
+        int res = -1;
+        if(arrayList.size()>0){
+            res=0;
+            for(int i =0; i<arrayList.size()-1; i++)
+                res+=(int)arrayList.get(i).getEdgeToward(arrayList.get(i+1)).getAttribute("pesoNormal");
+        }
+        return res;
+    }
     public ArrayList<Edge> obtenerEdges(){
         ArrayList<Edge> res=null;
         res = new ArrayList<>();
         for(int i =0; i<lista.size()-1; i++)
             res.add(lista.get(i).getEdgeToward(lista.get(i+1)));
+
+        return res;
+    }
+
+    public ArrayList<Edge> obtenerEdges(ArrayList<Node> arrayList){
+        ArrayList<Edge> res=null;
+        res = new ArrayList<>();
+        for(int i =0; i<arrayList.size()-1; i++)
+            res.add(arrayList.get(i).getEdgeToward(arrayList.get(i+1)));
 
         return res;
     }
