@@ -9,9 +9,13 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
+
+import javax.sound.sampled.*;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -55,9 +59,20 @@ public class MainView {
     private JButton btnEnviarMensaje;
     private JPanel frameInteraccion;
     private JLabel lblTipo;
+    private JButton SmokeWeedButton;
 
     public MainView() {
 
+        String soundName = "yes.wav";
+        AudioInputStream audioInputStream = null;
+        Clip clip=null;
+        try {
+            audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
+            clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         frame= new JFrame("MainView");
         frame.setContentPane(basePanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -127,6 +142,14 @@ public class MainView {
             @Override
             public void actionPerformed(ActionEvent e) {
                 enviarMensaje();
+            }
+        });
+        Clip finalClip = clip;
+        SmokeWeedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(finalClip !=null)
+                finalClip.start();
             }
         });
     }
