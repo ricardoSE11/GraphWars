@@ -66,6 +66,8 @@ public class MainView {
     private JButton EspejoButton;
     private JButton BombEffectButon;
     private JSpinner spnPorcentajeMeditacion;
+    private JButton bloquearAristaButton;
+    private JButton desbloquearAristaButton;
 
     public int PRECIODEESCUDO=50;
 
@@ -182,6 +184,22 @@ public class MainView {
                 if(!escudo.tieneBombEffect)
                     if(gastarDinero(PRECIODEESCUDO))
                         escudo.tieneBombEffect=true;
+            }
+        });
+        bloquearAristaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(origenValido()){
+                    try{
+                        Edge edge = graph.getEdge(txtOrigen.getText()+txtDestino.getText());
+                        edge.addAttribute("estaBloqueada", true);
+                    }catch (ElementNotFoundException ex){
+                        JOptionPane.showMessageDialog(frame,
+                                "Revise los nombres de los nodos",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         });
     }
