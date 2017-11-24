@@ -149,7 +149,7 @@ public class MainView {
                             algorithm.init(graph);
                             algorithm.compute(orig,dest);
                             costo -= algorithm.obtenerCosto();
-                            //todo: encontrar el camino correcto
+                            //todo: encontrar el camino correcto (DFS)
                             Edge aristaADesgastar = orig.getEdgeToward(dest);
                             ArrayList<Edge> aristasADesgastar = new ArrayList<>();
                             aristasADesgastar.add(aristaADesgastar);
@@ -162,6 +162,12 @@ public class MainView {
                             //todo: otros mensajes
                         }
                         break;
+
+                    case "Teletransportacion":
+                        System.out.println("Enviando un Dijkstra");
+                        System.out.println(dijkstra(graph , orig.getId() , dest.getId()));
+                        break;
+
                 }
 
 
@@ -294,7 +300,7 @@ public class MainView {
     //D: Funcion que dado un grafo y dos Nodos, retorna la lista con el nombre de los Nodos que llevan al camino mas corto
     private List<String> dijkstra(Graph graph , String origen ,  String destino)
     {
-        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "length");
+        Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "pesoFastWay");
 
         // Compute the shortest paths in g from A(origen) to all nodes
         dijkstra.init(graph);
@@ -302,7 +308,7 @@ public class MainView {
         dijkstra.compute();
 
         // Print the shortest path from A(origen) to B(destino)
-        System.out.println(dijkstra.getPath(graph.getNode(destino)));
+        //System.out.println(dijkstra.getPath(graph.getNode(destino)));
 
         String lista = dijkstra.getPath(graph.getNode(destino)).toString().replace("[","");
         lista = lista.replace("]" , "");

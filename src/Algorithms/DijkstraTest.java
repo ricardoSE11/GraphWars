@@ -45,6 +45,7 @@ public class DijkstraTest {
         g.addEdge("CF", "C", "F").addAttribute("length", 11);
         g.addEdge("DF", "D", "F").addAttribute("length", 15);
         g.addEdge("EF", "E", "F").addAttribute("length", 6);
+
         for (Node n : g)
             n.addAttribute("label", n.getId());
         for (Edge e : g.getEachEdge())
