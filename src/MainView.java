@@ -418,6 +418,7 @@ public class MainView {
     }
 
 
+    int prueba = 0;
 
 
 
