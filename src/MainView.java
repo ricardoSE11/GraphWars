@@ -6,7 +6,7 @@ import org.graphstream.graph.implementations.SingleGraph;
 import org.graphstream.ui.spriteManager.SpriteManager;
 import org.graphstream.ui.swingViewer.ViewPanel;
 import org.graphstream.ui.view.Viewer;
-
+//Todo:Arreglar etiqueta de egde para mostrar todos los datos
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -142,6 +142,10 @@ public class MainView {
                             DFSAlgorithm algorithm = new DFSAlgorithm();
                             algorithm.init(graph);
                             algorithm.compute(orig,dest);
+                            costo-=algorithm.obtenerCosto();
+                            //todo: funcion para gastar arista
+                            //todo: thread para volver a levantar la arista
+                            //todo: otros mensajes
                         }
                         break;
                 }

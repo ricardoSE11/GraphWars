@@ -1,6 +1,7 @@
 package Algorithms;
 
 import org.graphstream.algorithm.Algorithm;
+import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class DFSAlgorithm{
     Graph graph;
-    ArrayList<ArrayList<Node>> lista;
+    ArrayList<Node> lista;
     int weight;
 
     public void init(Graph graph) {
@@ -39,41 +40,46 @@ public class DFSAlgorithm{
 
         // Mark the current node as visited and store in path
         path.add(u);
-
+        visited.add(u);
         // If current vertex is same as destination, then print
         // current path[]
-        if u ==d:
-        print path
-        else:
-            # If current vertex is not destination
-            #Recur for all the vertices adjacent to this vertex
-        for i in self.graph[u]:
-        if visited[i]==False:
-        self.printAllPathsUtil(i, d, visited, path)
-
-        # Remove current vertex from path[] and mark it as unvisited
-        path.pop()
-        visited[u]= False
+        if (u==d){
+            lista=(path);
+        }
+        else {
+            // If current vertex is not destination
+            //Recur for all the vertices adjacent to this vertex
+            for (Edge i : u.getLeavingEdgeSet())//Todo:  Verificar que la arista esté activa
+                if (!visited.contains(i.getTargetNode())&&!((boolean)i.getAttribute("estaBloqueada")))
+                    aux(i.getTargetNode(), d, visited, path);
+        }
+        // Remove current vertex from path[] and mark it as unvisited
+        path.remove(u);
+        visited.remove(u);
 
     }
-        /*Iterator<Node> iterator=s.getDepthFirstIterator(true);
-        ArrayList<Node> route=new ArrayList<>();
-        while (iterator.hasNext()){
-            Node n = iterator.next();
-            route.add(n);
-            if(n==d)
-                break;
-        }
 
-        if(route.contains(d))  {
-            for (int i=route.size()-1;i>=0;i--){
-                for (int j=i; j>0; j--){
-                    if(!route.get(j).hasEdgeFrom(route.get(j-1)))
-                        route.remove(j-1);
-                }
-            }
-            return route;
+    /**
+     * Devuelve -1 si no hay camino
+     * @return
+     */
+    public int obtenerCosto(){
+        int res = -1;
+        if(lista!=null){
+            res=0;
+            for(int i =0; i<lista.size()-1; i++)
+                res+=(int)lista.get(i).getEdgeToward(lista.get(i+1)).getAttribute("pesoNormal");
         }
-        return null;
-    }*/
+        return res;
+    }
+
+    public List<Edge> obtenerEdges(){
+        ArrayList<Edge> res=null;
+        if(lista!=null){
+            res = new ArrayList<>();
+            for(int i =0; i<lista.size()-1; i++)
+                res.add(lista.get(i).getEdgeToward(lista.get(i+1)));
+        }
+        return res;
+    }
 }
