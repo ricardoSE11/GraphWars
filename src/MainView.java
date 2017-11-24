@@ -580,7 +580,7 @@ public class MainView {
         ThreadArista deshabilitar = new ThreadArista(tiempo , arista);
         deshabilitar.run();
     }
-    
+
 
     //Origen es quien envio el mensaje originalmente
     private void efectoBomba(Node origen , Node afectado)
