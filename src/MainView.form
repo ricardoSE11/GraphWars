@@ -171,6 +171,7 @@
                 </constraints>
                 <properties>
                   <text value="Bloquear arista"/>
+                  <visible value="false"/>
                 </properties>
               </component>
               <component id="9145a" class="javax.swing.JButton" binding="desbloquearAristaButton" default-binding="true">
@@ -179,6 +180,7 @@
                 </constraints>
                 <properties>
                   <text value="Desbloquear arista"/>
+                  <visible value="false"/>
                 </properties>
               </component>
             </children>

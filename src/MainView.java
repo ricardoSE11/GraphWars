@@ -199,6 +199,19 @@ public class MainView {
                 }
             }
         });
+        desbloquearAristaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(origenValido()){
+                    Edge edge = graph.getEdge(txtOrigen.getText()+txtDestino.getText());
+                    if((boolean)edge.getAttribute("estaBloqueada")&&(int)edge.getAttribute("vida")>0){
+                        if (gastarDinero((Integer) spnCostoDesbloqueo.getValue())){
+                            edge.addAttribute("estaDesbloqueada", true);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void enviarMensaje() {
@@ -431,7 +444,8 @@ public class MainView {
             lblTipo.setVisible(true);
             cmbMensajeTipo.setVisible(true);
             frameEscudos.setVisible(true);
-
+            bloquearAristaButton.setVisible(true);
+            desbloquearAristaButton.setVisible(true);
 
             frameInfo.setVisible(true);
             terminarTurnoButton.setVisible(true);
